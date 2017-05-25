@@ -76,10 +76,26 @@ class Welcome(Handler):
         else:
             self.rediect('/signup',)
 
+class Login(Handler):
+    def get(self):
+        self.render('login.html')
+
+    def post(self):
+        username = self.request.get(username)
+        password = self.request.get(password)
+
+        u = user.login(username,password)
+        if u:
+            self.render('/welcome')
+        else:
+            error = "invalid"
+            self.render("login.html",error = erro)
+
 
 
 
 app = webapp2.WSGIApplication([
     ('/signup', Signup),
-    ('/welcome',Welcome)
+    ('/welcome',Welcome),
+    ('/login',Login)
 ], debug=True)
