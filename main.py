@@ -257,45 +257,62 @@ class Handler(webapp2.RequestHandler):
                     c.delete()
                     self.redirect("/blog/"+post_id+"?deleted_comment_id=" +
                               comment_id)
-            else:
-                self.redirect("/blog/" + post_id + "?error=You don't have " +
+                else:
+                    self.redirect("/blog/" + post_id + "?error=You don't have " +
                               "access to delete this comment.")
-        else:
-            self.redirect("/login?error=You need to be logged, in order to " +
+            else:
+                self.redirect("/login?error=You need to be logged, in order to " +
                           "delete your comment!!")
 
+    class EditComment(BlogHandler):
+        def get(self, post_id, comment_id):
+            if self.user:
+                key = db.Key.from_path('Comment', int(comment_id),
+                                   parent=blog_key())
+                c = db.get(key)
+                if c.user_id == self.user.key().id():
+                    self.render("editcomment.html", comment=c.comment)
+                else:
+                    self.redirect("/blog/" + post_id +
+                              "?error=You don't have access to edit this " +
+                              "comment.")
+            else:
+                self.redirect("/login?error=You need to be logged, in order to" +
+                          " edit your post!!")
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+            def post(self,post_id,comment_id):
+                """
+                    update post
+                """
+                if not self.user:
+                    self.redirect("/blog")
+                comment = self.get('comment')
+                if comment:
+                    key = db.Key.from_path('Comment', int(comment_id),
+                                   parent=blog_key())
+                    c = db.get(key)
+                    c.comment = comment
+                    c.put()
+                    self.redirect("/blog/%s" %post_id)
+                else:
+                    error = "subject and content, please!"
+                    self.render("editpost.html", subject=subject,
+                                 content=content, error=error)
 
 USER_RE = re.compile(r"^[a-zA-Z0-9_-]{3,20}$")
+
 def valid_username(username):
     return username and USER_RE.match(username)
 
 PASS_RE = re.compile(r"^.{3,20}$")
+
 def valid_password(password):
     return password and PASS_RE.match(password)
 
 EMAIL_RE  = re.compile(r'^[\S]+@[\S]+\.[\S]+$')
+
 def valid_email(email):
     return  email and EMAIL_RE.match(email)
-
-
-
 
 class Signup(Handler):
     def get(self):
