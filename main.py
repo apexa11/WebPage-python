@@ -95,6 +95,116 @@ class Handler(webapp2.RequestHandler):
         deleted_post_id = self.request.get('deleted_post_id')
         self.render('front.html',posts=posts,deleted_post_id=deleted_post_id)
 
+    class PostPage(BlogHandler):
+    def get(self, post_id):
+        """
+            This renders home post page with content, comments and likes.
+        """
+        key = db.Key.from_path('Post', int(post_id), parent=blog_key())
+        post = db.get(key)
+
+        comments = db.GqlQuery("select * from Comment where post_id = " +
+                               post_id + " order by created desc")
+
+        likes = db.GqlQuery("select * from Like where post_id="+post_id)
+
+        if not post:
+            self.error(404)
+            return
+
+        error = self.request.get('error')
+
+        self.render("permalink.html", post=post, noOfLikes=likes.count(),
+                    comments=comments, error=error)
+
+    def post(self, post_id):
+        key = db.Key.from_path('Post', int(post_id), parent=blog_key())
+        post = db.get(key)
+
+        if not post:
+            self.error(404)
+            return
+        """
+            On posting comment, new comment tuple is created and stored,
+            with relationship data of user and post.
+        """
+        c=""
+        if(self.user):
+            #on click like ,post-like value increases.
+            if(self.request.get('like') and
+                self.request.get('like')== 'update'):
+                likes = db.GqlQuery("select * from Like where post_id="+post_id
+                                    +"and user_id" + str(self.user.key()id()))
+
+            if self.user.key.id()==post.user_id:
+                self.redirect('/blog'+ "You can't like your post")
+
+                return
+
+            elif likes.count()== 0
+                l = Like(parent=blog_key(), user_id=self.user.key().id(),
+                             post_id=int(post_id))
+                    l.put()
+
+            # on commenting , it creates new comment tuple
+            if(self.request.get('comment')):
+                c =Comment (parent_key = blog_key(),user_id=self.user.key().id(),
+                            post_id =int(post_id),
+                            comment = self.request.get('comment'))
+                c.put()
+            else:
+                self.redirect('/login?error=You need to login before'+
+                              'performing Edit or like, Comment')
+                return
+
+            comments = db.GqlQuery("select * from Comment where post_id = " +
+                               post_id + "order by created desc")
+
+        likes = db.GqlQuery("select * from Like where post_id="+post_id)
+
+        self.render("permalink.html", post=post,
+                    comments=comments, noOfLikes=likes.count(),
+                    new=c)
+
+    class NewPost(Handler):
+        def get(self):
+            if self.user:
+                self.render("news.html")
+            else:
+                self.redirect("/login")
+
+        def post(self):
+            """
+            Creates new post and redirect to new post page.
+            """
+            if not self.user:
+                self.redirect('/blog')
+
+            subject = self.request.get('subject')
+            content = self.request.get('content')
+
+            if subject and content:
+                p = Post(parent=blog_key(), user_id=self.user.key().id(),
+                     subject=subject, content=content)
+                p.put()
+
+                self.redirect("/blog/%s",str(p.key().id()))
+
+            else:
+                error = "subject and content please!!"
+                self.render("news.html", subject=subject, content = content
+                             error = error)
+
+
+
+
+
+
+
+
+
+
+
 
 
 
