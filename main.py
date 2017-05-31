@@ -195,6 +195,39 @@ class Handler(webapp2.RequestHandler):
                 self.render("news.html", subject=subject, content = content
                              error = error)
 
+    class DeletePost(Handler):
+        def get(self,post_id):
+            if self.user:
+                key = db.Key.from_path('Post', int(post_id), parent=blog_key())
+                post = db.get(key)
+                if post.user.id == self.user.key().id():
+                    post.delete()
+                    self.redirect("/?deleted_post_id="+post_id)
+                else:
+                    self.redirect("/blog/"+post_id+"?error=you don't"+
+                                    "have any access to delete this post")
+            else:
+                self.redirect("/login?error=You need to be logged in"+
+                              "in order to delete your post!!")
+
+    class EditPost(Handler):
+        def get(self,post_id):
+            if self.user:
+                key = db.Key.from_path('Post', int(post_id), parent=blog_key())
+                post = db.get(key)
+                if post.user_id == self.user.key().id():
+                self.render("editpost.html", subject=post.subject,
+                            content=post.content)
+            else:
+                self.redirect("/blog/" + post_id + "?error=You don't have " +
+                              "access to edit this record.")
+        else:
+            self.redirect("/login?error=You need to be logged, " +
+                          "in order to edit your post!!")
+
+
+
+
 
 
 
