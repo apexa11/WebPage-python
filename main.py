@@ -346,34 +346,52 @@ class Signup(Handler):
         else:
             self.redirect('/welcome?username=' +username)
 
-class Welcome(Handler):
+class Register(Signup):
     def get(self):
-        username = self.request.get("username")
-        if valid_username(username):
-            self.render('welcome.html',username = username)
-        else:
-            self.rediect('/signup',)
+        #chack if user already exist
+        u = User.by_name(self.username)
+            if u:
+                msg = user already exists.
+                self.render("signup.html", error=msg)
+
+            else:
+                u = User.register(self.username,self.password,self.email)
+                u.put()
+                self.login(u)
+                self.redirect('/')
+
+
 
 class Login(Handler):
     def get(self):
         self.render('login.html')
 
     def post(self):
-        username = self.request.get(username)
-        password = self.request.get(password)
+        """
+            login validation
+        """
+        username = self.request.get('username')
+        password = self.request.get('password')
 
         u = user.login(username,password)
         if u:
-            self.render('/welcome')
+            self.login(u)
+            self.render('/')
         else:
             error = "invalid"
-            self.render("login.html",error = erro)
+            self.render("login.html",error = error)
 
-
+class Logout(Handler):
+    def get(self):
+        self.logout()
+        self.redirect('/')
 
 
 app = webapp2.WSGIApplication([
-    ('/signup', Signup),
-    ('/welcome',Welcome),
-    ('/login',Login)
+    ('/signup', Register),
+    ('/login',Login),
+    ('/logout',Logout),
+    ('/?',BlogFront),
+    ('/blog/newpost',NewPost)
+
 ], debug=True)
