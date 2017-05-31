@@ -242,6 +242,12 @@ class Handler(webapp2.RequestHandler):
             post.content = content
             post.put()
             self.redirect("/blog/%s" % post_id)
+        else:
+            error = "subject and content please"
+            self.render("edit.html", subject = subject, content = content,
+                        error = error)
+
+    class DeleteComment(Handler):
 
 
 
