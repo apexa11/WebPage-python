@@ -225,6 +225,25 @@ class Handler(webapp2.RequestHandler):
             self.redirect("/login?error=You need to be logged, " +
                           "in order to edit your post!!")
 
+        def post (self,post_id):
+            """
+                update post
+            """
+            if not self.user:
+                self.redirect('/blog')
+
+        subject = self.request.get('subject')
+        content = self.request.get('content')
+
+        if subject and content:
+            key = db.Key.from_path('Post', int(post_id), parent=blog_key())
+            post = db.get(key)
+            post.subject = subject
+            post.content = content
+            post.put()
+            self.redirect("/blog/%s" % post_id)
+
+
 
 
 
