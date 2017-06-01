@@ -388,10 +388,17 @@ class Logout(Handler):
 
 
 app = webapp2.WSGIApplication([
-    ('/signup', Register),
-    ('/login',Login),
-    ('/logout',Logout),
-    ('/?',BlogFront),
-    ('/blog/newpost',NewPost)
-
-], debug=True)
+                               ('/?', BlogFront),
+                               ('/blog/([0-9]+)', PostPage),
+                               ('/blog/newpost', NewPost),
+                               ('/blog/deletepost/([0-9]+)', DeletePost),
+                               ('/blog/editpost/([0-9]+)', EditPost),
+                               ('/blog/deletecomment/([0-9]+)/([0-9]+)',
+                                DeleteComment),
+                               ('/blog/editcomment/([0-9]+)/([0-9]+)',
+                                EditComment),
+                               ('/signup', Register),
+                               ('/login', Login),
+                               ('/logout', Logout),
+                               ],
+                              debug=True)
