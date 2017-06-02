@@ -19,3 +19,16 @@ class Post(db.Model):
     created = db.DateTimeProperty(auto_now_add = True)
     last_modification = db.DateTimeProperty(auto_now = True)
 
+    def getUserName(self):
+        """
+            Gets username of the person, who wrote the blog post.
+        """
+        user = User.by_id(self.user_id)
+            return user.name
+
+    def render(self):
+        """
+            Renders the post using object data.
+        """
+        self._render_text = self.content.replace('\n', '<br>')
+        return helper.jinja_render_str("post.html", p=self)
